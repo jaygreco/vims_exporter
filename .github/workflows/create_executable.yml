@@ -16,7 +16,7 @@ jobs:
     # multi-os execution
     runs-on: ${{ matrix.os }}
     strategy:
-      fail-fast: false
+      fail-fast: true
       matrix:
         os: ['windows-latest', 'ubuntu-latest', 'macos-latest', 'self-hosted']
     
@@ -27,7 +27,6 @@ jobs:
       with:
         python-version: 3.11
     - run: pip install .
-
     # create executables using pyinstaller
     - if: ${{ matrix.os == 'windows-latest' }}
       run: pyinstaller specs/vims_to_ics_win.spec
@@ -48,10 +47,13 @@ jobs:
 
     # Zip artifacts
     - if: ${{ matrix.os == 'windows-latest' }}
-      run: Compress-Archive -Path dist/vims_to_ics* -Destination binaries-${{ env.ARCH }}.zip
-    - if: ${{ matrix.os != 'windows-latest' }}
-      run: zip -r binaries-${{ env.ARCH }}.zip dist/vims_to_ics*
-    
+      run: Compress-Archive -Path dist/vims_to_ics* -Destination binaries-${{ matrix.os}}.zip
+    - if: ${{ matrix.os == 'ubuntu-latest' }}
+      run: zip -r binaries-${{ matrix.os}}.zip dist/vims_to_ics*;
+    - if: ${{ matrix.os == 'macos-latest' }}
+      run: zip -r binaries-${{ matrix.os}}.zip dist/vims_to_ics.app;
+
+
     # Upload artifacts
     - name: Archive artifacts
       uses: actions/upload-artifact@v3
